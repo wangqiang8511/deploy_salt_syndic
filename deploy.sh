@@ -1,25 +1,26 @@
 ## Deploy salt
 curl -L http://bootstrap.saltstack.com | sudo sh -s -- "$@" -S -M -X git v2014.1.10
 
-
 git clone https://github.com/wangqiang8511/deploy_salt_syndic.git /tmp/syndic
 
-python /tmp/syndic/prepare_salt_conf.py
+saltcloudfolder=/tmp/`ls /tmp/ -a | grep .saltcloud`
+python /tmp/syndic/prepare_salt_conf.py $saltcloudfolder
 
+sudo rm -rf /etc/salt/pki
 sudo mkdir -p /etc/salt/pki
-if [ -d /tmp/.saltcloud ];
+if [ -d $saltcloudfolder ];
 then
-    sudo cp /tmp/.saltcloud/minion.pem /etc/salt/pki/minion.pem
-    sudo cp /tmp/.saltcloud/minion.pub /etc/salt/pki/minion.pub
-    sudo cp /tmp/.saltcloud/minion /etc/salt/minion
-    if [ -e /tmp/.saltcloud/grains ];
+    sudo cp $saltcloudfolder/minion.pem /etc/salt/pki/minion.pem
+    sudo cp $saltcloudfolder/minion.pub /etc/salt/pki/minion.pub
+    sudo cp $saltcloudfolder/minion /etc/salt/minion
+    if [ -e $saltcloudfolder/grains ];
     then
-    sudo cp /tmp/.saltcloud/grains /etc/salt/grains
+    sudo cp $saltcloudfolder/grains /etc/salt/grains
     fi
-    if [ -e /tmp/.saltcloud/master ];
+    if [ -e $saltcloudfolder/master ];
     then
-    sudo cp /tmp/.saltcloud/master /etc/salt/master
-    sudo cp /tmp/.saltcloud/autosign.conf /etc/salt/autosign.conf
+    sudo cp $saltcloudfolder/master /etc/salt/master
+    sudo cp $saltcloudfolder/autosign.conf /etc/salt/autosign.conf
     sudo service salt-master restart
     sudo salt-syndic -d
     fi

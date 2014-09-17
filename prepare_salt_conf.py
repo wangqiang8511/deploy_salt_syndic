@@ -26,6 +26,10 @@ syndic_minion_data = {
     "log_level": "info",
 }
 
+config = {
+    'tmp_cloud_folder': "/tmp/.saltcloud/"
+}
+
 
 def etcd_get(key):
     conn = httplib.HTTPConnection("10.17.0.10", 4001)
@@ -48,15 +52,17 @@ def etcd_put(key, value):
 
 
 def load_grains():
-    if os.path.isfile("/tmp/.saltcloud/grains"):
-        stream = open("/tmp/.saltcloud/grains", 'r')
+    grains_file = os.path.join(config["tmp_cloud_folder"], "grains")
+    if os.path.isfile(grains_file):
+        stream = open(grains_file, 'r')
         return yaml.load(stream)
     return {}
 
 
 def load_minion():
-    if os.path.isfile("/tmp/.saltcloud/minion"):
-        stream = open("/tmp/.saltcloud/minion", 'r')
+    minion_file = os.path.join(config["tmp_cloud_folder"], "minion")
+    if os.path.isfile(minion_file):
+        stream = open(minion_file, 'r')
         return yaml.load(stream)
     return {}
 
@@ -114,23 +120,26 @@ def render_syndic_master_template():
     extra_pillar = load_grains().get("salt", {}).get("extra_pillar", [])
     syndic_master_data["gitfs_remotes"] = gitfs_remotes
     syndic_master_data["extra_pillar"] = extra_pillar
-    yaml.dump(syndic_master_data, open("/tmp/.saltcloud/master", "w"),
+    master_file = os.path.join(config["tmp_cloud_folder"], "master")
+    yaml.dump(syndic_master_data, open(master_file, "w"),
               default_flow_style=False, indent=2)
     pass
 
 
 def render_autosign_file():
-    with open("/tmp/.saltcloud/autosign.conf", "w") as f:
+    autosign_file = os.path.join(config["tmp_cloud_folder"], "autosign.conf")
+    with open(autosign_file, "w") as f:
         f.write("*." + get_domain())
     pass
 
 
 def render_minon_template():
+    minion_file = os.path.join(config["tmp_cloud_folder"], "minion")
     syndic_minion_data["id"] = get_id()
     syndic_minion_data["master"] = str(get_syndic_master())
     if not syndic_minion_data["master"]:
         return False
-    yaml.dump(syndic_minion_data, open("/tmp/.saltcloud/minion", "w"),
+    yaml.dump(syndic_minion_data, open("minion_file", "w"),
               default_flow_style=False, indent=2)
     return True
 
@@ -154,4 +163,6 @@ def prepare_conf():
 
 
 if __name__ == "__main__":
+    import sys
+    config["tmp_cloud_folder"] = sys.argv[1]
     prepare_conf()
