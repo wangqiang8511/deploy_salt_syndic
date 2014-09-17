@@ -15,7 +15,7 @@ syndic_master_data = {
     "log_level": "info",
     "fileserver_backend": ["git", "roots"],
     "gitfs_remotes": [],
-    "extra_pillar": [],
+    "ext_pillar": [],
     "autosign_file": "/etc/salt/autosign.conf",
     "syndic_master": "10.17.0.10",
     "syndic_log_file": "/var/log/salt/syndic",
@@ -117,9 +117,9 @@ def set_syndic_master():
 
 def render_syndic_master_template():
     gitfs_remotes = load_grains().get("salt", {}).get("gitfs_remotes", [])
-    extra_pillar = load_grains().get("salt", {}).get("ext_pillar", [])
+    ext_pillar = load_grains().get("salt", {}).get("ext_pillar", [])
     syndic_master_data["gitfs_remotes"] = gitfs_remotes
-    syndic_master_data["extra_pillar"] = extra_pillar
+    syndic_master_data["ext_pillar"] = ext_pillar
     master_file = os.path.join(config["tmp_cloud_folder"], "master")
     yaml.dump(syndic_master_data, open(master_file, "w"),
               default_flow_style=False, indent=2)
@@ -139,7 +139,7 @@ def render_minon_template():
     syndic_minion_data["master"] = str(get_syndic_master())
     if not syndic_minion_data["master"]:
         return False
-    yaml.dump(syndic_minion_data, open("minion_file", "w"),
+    yaml.dump(syndic_minion_data, open(minion_file, "w"),
               default_flow_style=False, indent=2)
     return True
 
