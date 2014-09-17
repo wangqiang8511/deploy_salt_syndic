@@ -117,7 +117,7 @@ def set_syndic_master():
 
 def render_syndic_master_template():
     gitfs_remotes = load_grains().get("salt", {}).get("gitfs_remotes", [])
-    extra_pillar = load_grains().get("salt", {}).get("extra_pillar", [])
+    extra_pillar = load_grains().get("salt", {}).get("ext_pillar", [])
     syndic_master_data["gitfs_remotes"] = gitfs_remotes
     syndic_master_data["extra_pillar"] = extra_pillar
     master_file = os.path.join(config["tmp_cloud_folder"], "master")
