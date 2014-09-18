@@ -11,13 +11,15 @@ import httplib
 import commands
 
 
+vpc_master = "10.17.0.10"
+
 syndic_master_data = {
     "log_level": "info",
     "fileserver_backend": ["git", "roots"],
     "gitfs_remotes": [],
     "ext_pillar": [],
     "autosign_file": "/etc/salt/autosign.conf",
-    "syndic_master": "10.17.0.10",
+    "syndic_master": vpc_master, 
     "syndic_log_file": "/var/log/salt/syndic",
     "syndic_pidfile": "/var/run/salt-syndic.pid",
 }
@@ -32,7 +34,7 @@ config = {
 
 
 def etcd_get(key):
-    conn = httplib.HTTPConnection("10.17.0.10", 4001)
+    conn = httplib.HTTPConnection(vpc_master, 4001)
     conn.request("GET", "/v2/keys/" + key)
     rep = conn.getresponse()
     if rep.status == 200:
@@ -43,7 +45,8 @@ def etcd_get(key):
 def etcd_put(key, value):
     params = {"value": value}
     opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request('http://10.17.0.10:4001/v2/keys/' + key, data=urllib.urlencode(params))
+    request = urllib2.Request('http://%s:4001/v2/keys/' % vpc_master + key, 
+                              data=urllib.urlencode(params))
     request.get_method = lambda: 'PUT'
     rep = opener.open(request)
     if rep.code == 200 or rep.code == 201:
@@ -144,17 +147,26 @@ def render_minon_template():
     return True
 
 
+def render_dns_resolver():
+    with open("/etc/resolv.conf", "w") as f:
+        f.write("nameserver %s\n" % vpc_master)
+        if get_domain():
+            f.write("domain %s\n" % get_domain())
+
+
 def prepare_conf():
     if is_syndic_master():
         set_syndic_master()
         render_syndic_master_template()
         render_autosign_file()
         render_minon_template()
+        render_dns_resolver()
         return
     if is_syndic_minion():
         c = 0
         while  c < 10:
             if render_minon_template():
+                render_dns_resolver()
                 return
             c += 1
             time.sleep(20)

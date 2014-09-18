@@ -7,11 +7,11 @@ saltcloudfolder=/tmp/`ls /tmp/ -a | grep .saltcloud`
 python /tmp/syndic/prepare_salt_conf.py $saltcloudfolder
 
 sudo rm -rf /etc/salt/pki
-sudo mkdir -p /etc/salt/pki
+sudo mkdir -p /etc/salt/pki/minion
+sudo aws s3 cp s3://bigdata-keys/razer_bigdata_salt.pem /etc/salt/pki/minion/minion.pem
+sudo aws s3 cp s3://bigdata-keys/razer_bigdata_salt.pub /etc/salt/pki/minion/minion.pub
 if [ -d $saltcloudfolder ];
 then
-    sudo cp $saltcloudfolder/minion.pem /etc/salt/pki/minion.pem
-    sudo cp $saltcloudfolder/minion.pub /etc/salt/pki/minion.pub
     sudo cp $saltcloudfolder/minion /etc/salt/minion
     if [ -e $saltcloudfolder/grains ];
     then
@@ -25,8 +25,6 @@ then
     sudo salt-syndic -d
     fi
 else
-    sudo cp /tmp/minion.pem /etc/salt/pki/minion.pem
-    sudo cp /tmp/minion.pub /etc/salt/pki/minion.pub
     sudo cp /tmp/minion /etc/salt/minion
     if [ -e /tmp/grains ];
     then
