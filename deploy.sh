@@ -11,7 +11,7 @@ Host bitbucket.org
 EOF
 sudo chmod 0600 /root/.ssh/config
 
-git clone https://github.com/wangqiang8511/deploy_salt_syndic.git /tmp/syndic
+git clone git@bitbucket.org:razerbigdata/deploy_salt_syndic.git
 
 saltcloudfolder=/tmp/`ls /tmp/ -a | grep .saltcloud`
 python /tmp/syndic/prepare_salt_conf.py $saltcloudfolder
