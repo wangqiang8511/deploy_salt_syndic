@@ -1,7 +1,7 @@
 ## Deploy salt
 curl -L http://bootstrap.saltstack.com | sudo sh -s -- "$@" -S -M -X git v2014.1.10
 
-sudo aws s3 cp s3://bigdata-keys/razer_bigdata_salt.pub /root/.ssh/razer-bigdata-deploy.pem
+sudo aws s3 cp s3://bigdata-keys/razer-bigdata-deploy.pem /root/.ssh/razer-bigdata-deploy.pem
 
 sudo cat << EOF > /root/.ssh/config
 Host bitbucket.org
@@ -9,7 +9,13 @@ Host bitbucket.org
     User git 
     IdentityFile /root/.ssh/razer-bigdata-deploy.pem
 EOF
-sudo chmod 0600 /root/.ssh/config
+
+sudo chmod 0600 /root/.ssh/config 
+sudo chmod 0600 /root/.ssh/razer-bigdata-deploy.pem
+
+sudo cat << EOF >> /etc/ssh/ssh_config
+StrictHostKeyChecking no
+EOF
 
 git clone git@bitbucket.org:razerbigdata/deploy_salt_syndic.git
 
